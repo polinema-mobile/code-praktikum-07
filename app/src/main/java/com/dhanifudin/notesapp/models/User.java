@@ -1,12 +1,42 @@
 package com.dhanifudin.notesapp.models;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.Ignore;
+import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
+
+@Entity(tableName = "users")
 public class User {
+
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(name = "id")
+	private Long id;
+
+    @NonNull
 	private String username;
+
+    @NonNull
 	private String password;
 
+    @Ignore
 	public User(String username, String password) {
+		this(null, username, password);
+	}
+
+	public User(Long id, @NonNull String username, @NonNull String password) {
+		this.id = id;
 		this.username = username;
 		this.password = password;
+	}
+
+	@NonNull
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(@NonNull Long id) {
+		this.id = id;
 	}
 
 	public String getUsername() {
@@ -23,5 +53,14 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	@Override
+	public String toString() {
+		return "User{" +
+				"id=" + id +
+				", username='" + username + '\'' +
+				", password='" + password + '\'' +
+				'}';
 	}
 }

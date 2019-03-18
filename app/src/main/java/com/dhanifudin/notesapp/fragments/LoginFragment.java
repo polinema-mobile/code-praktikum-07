@@ -1,7 +1,9 @@
 package com.dhanifudin.notesapp.fragments;
 
 
+import android.content.Context;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,10 +20,6 @@ import com.dhanifudin.notesapp.R;
 public class LoginFragment extends Fragment {
 
 	private OnLoginFragmentListener listener;
-
-	public interface OnLoginFragmentListener {
-		void onLoginClicked(View view, String username, String password);
-	}
 
 	public LoginFragment() {
 		// Required empty public constructor
@@ -43,12 +41,45 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				String username = usernameText.getText().toString();
-				String password = passwordText.getText().toString();
-				listener.onLoginClicked(view, username, password);
+			    if (listener != null) {
+                    String username = usernameText.getText().toString();
+                    String password = passwordText.getText().toString();
+                    listener.onLoginButtonClicked(view, username, password);
+                }
 			}
 		});
+
+        TextView registerLink = view.findViewById(R.id.link_register);
+        registerLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listener != null) {
+                    listener.onRegisterLinkClicked();
+                }
+            }
+        });
 		return view;
 	}
 
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+		if (context instanceof OnLoginFragmentListener) {
+		    listener = (OnLoginFragmentListener) context;
+        } else {
+		    throw new RuntimeException(context.toString()
+                + " must implement OnLoginFragmentListener");
+        }
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		listener = null;
+	}
+
+	public interface OnLoginFragmentListener {
+        void onLoginButtonClicked(View view, String username, String password);
+        void onRegisterLinkClicked();
+    }
 }

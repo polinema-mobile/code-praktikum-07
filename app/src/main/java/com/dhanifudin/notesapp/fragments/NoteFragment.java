@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
@@ -35,15 +36,8 @@ public class NoteFragment extends Fragment {
 	private NoteAdapter adapter;
 	private OnNoteFragmentListener listener;
 
-	public interface OnNoteFragmentListener {
-        void onLogoutClick();
-	}
 
 	public NoteFragment() {
-	}
-
-	public void setListener(OnNoteFragmentListener listener) {
-		this.listener = listener;
 	}
 
 	@Override
@@ -59,9 +53,20 @@ public class NoteFragment extends Fragment {
 		View view = inflater.inflate(R.layout.fragment_note, container, false);
 		recyclerView = view.findViewById(R.id.rv_notes);
 
-		adapter = new NoteAdapter(getContext(), Data.getNotes());
+		FloatingActionButton fab = view.findViewById(R.id.fab);
+		fab.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (listener != null) {
+                    listener.onAddButtonClicked();
+				}
+			}
+		});
+
+		adapter = new NoteAdapter(getContext());
 		recyclerView.setAdapter(adapter);
-		displayAsList();
+        listener.onNotesLoad(adapter);
+        displayAsGrid();
 
 		return view;
 	}
@@ -96,10 +101,35 @@ public class NoteFragment extends Fragment {
 
 			case R.id.action_logout:
 				Log.i(TAG, "Logout click");
-				listener.onLogoutClick();
+				if (listener != null) {
+					listener.onLogoutMenuClicked();
+				}
 				return true;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onAttach(Context context) {
+		super.onAttach(context);
+		if (context instanceof OnNoteFragmentListener) {
+			listener = (OnNoteFragmentListener) context;
+		} else {
+			throw new RuntimeException(context.toString()
+					+ "must implement OnNoteFragmentListener");
+		}
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		listener = null;
+	}
+
+	public interface OnNoteFragmentListener {
+	    void onNotesLoad(NoteAdapter adapter);
+		void onAddButtonClicked();
+		void onLogoutMenuClicked();
 	}
 
 }

@@ -3,6 +3,7 @@ package com.dhanifudin.notesapp.adapters;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +23,21 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
 	private Context context;
 	private List<Note> notes;
 	private int layout;
+	private OnNoteAdapterListener listener;
+
+	public NoteAdapter(Context context) {
+		this(context, null);
+	}
 
 	public NoteAdapter(Context context, List<Note> notes) {
 		this.context = context;
 		this.notes = notes;
 		this.settings = new Settings(context);
+	}
+
+	public void setNotes(List<Note> notes) {
+		this.notes = notes;
+		notifyDataSetChanged();
 	}
 
 	public void setLayout(int layout) {
@@ -65,10 +76,37 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
         return layout;
 	}
 
+	@Override
+	public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+		super.onAttachedToRecyclerView(recyclerView);
+        Context context = recyclerView.getContext();
+        if (context instanceof OnNoteAdapterListener) {
+            listener = (OnNoteAdapterListener) context;
+		} else {
+            throw new RuntimeException(context.toString()
+				+ "must implement OnNoteAdapterListener");
+		}
+	}
+
+	@Override
+	public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+		super.onDetachedFromRecyclerView(recyclerView);
+        listener = null;
+	}
+
 	public abstract class ViewHolder extends RecyclerView.ViewHolder {
 
 		public ViewHolder(@NonNull View itemView) {
 			super(itemView);
+			itemView.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					if (listener != null) {
+						Note note = notes.get(getAdapterPosition());
+                        listener.onNoteClicked(note);
+					}
+				}
+			});
 		}
 
 		protected abstract void onBindViewHolder(Note note);
@@ -110,6 +148,10 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.ViewHolder> {
             titleText.setText(note.getTitle());
             contentText.setText(note.getContent());
 		}
+	}
+
+	public interface OnNoteAdapterListener {
+		void onNoteClicked(Note note);
 	}
 
 }
